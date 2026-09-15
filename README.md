@@ -4,10 +4,10 @@ CryptNote lets you send a private message through a short link. Share a password
 
 ## Use
 
-1. Recipient: open **Receive a note**, choose **Generate password + QR**, and privately show the QR to the sender. Keep this page open or explicitly enable **Remember password on this device**.
-2. Sender: open **Send a note**, scan the QR with the camera or upload its image, write a message, and choose **Encrypt & create link**. Manual shared passwords also work (minimum 16 characters).
-3. Share the generated link, such as `https://cryptnote.pages.dev/3Ds`. It never contains the password.
-4. Recipient: open the link or paste it into Receive, enter the same password, and decrypt locally. Wrong-password retries reuse downloaded encrypted bytes.
+1. On either **Send a note** or **Receive a note**, choose **Password** or **QR code**. Enter a shared password and select **Use password**, or generate a QR to share privately. The other person can scan it or upload its image from QR mode.
+2. After generating a QR, select **Use this password**. Setup collapses to **Password ready**. Use **Change / share** to edit it or show its QR again; re-sharing keeps the same password.
+3. Sender: write the message and select **Encrypt & create link**. Share the short link, such as `https://cryptnote.pages.dev/3Ds`, with the recipient. The link never contains the password.
+4. Recipient: after setting the password, enter the note link or code and select **Decrypt note**. Password entry stays hidden while reading. A wrong password reopens entry, and retries reuse the downloaded encrypted bytes.
 
 Passwords stay in page memory by default. Opting in saves only the password in localStorage on this browser/origin. Unchecking removes the saved copy immediately. **Clear password** removes the saved and in-page password, erases the QR, and clears decrypted text. Explicitly saved passwords persist until cleared: this is the user-selected exception to message expiry. No messages or drafts are saved to browser storage.
 

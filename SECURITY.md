@@ -4,7 +4,7 @@
 
 Web Crypto derives a non-extractable AES-256-GCM key with PBKDF2-SHA-256, 600,000 iterations and a fresh random 16-byte salt per message. Every encryption also generates a fresh 12-byte IV. The binary envelope contains salt (16 bytes), IV (12 bytes), and ciphertext including a 16-byte GCM tag. Plaintext is 1–65,536 UTF-8 bytes. The server bounds streamed requests to 65,580 bytes.
 
-Salt prevents reuse of precomputed password tables; it does not make weak passwords immune to offline guessing. QR passwords contain 32 random bytes encoded as 64 hex characters (256 bits). Sending requires at least 16 characters for manual passwords; length alone does not imply strength. QR payloads are `cryptnote:v1:<64 lowercase hex characters>`, not URLs. Scanning never navigates to QR content.
+Salt prevents reuse of precomputed password tables; it does not make weak passwords immune to offline guessing. QR passwords contain 32 random bytes encoded as 64 hex characters (256 bits). Sending requires at least 16 characters for manual passwords; length alone does not imply strength. Generated-password QR payloads use `cryptnote:v1:<64 lowercase hex characters>`. Existing passwords can be shared as `cryptnote:v2:<percent-encoded password>`. Both are local data, not URLs. Scanning never navigates to QR content.
 
 This app never sends passwords or plaintext. HTTPS additionally protects transport. The public API can validate size, not prove arbitrary callers encrypted their input. Anyone who sees the QR can decrypt notes protected by that password. Exchange it privately.
 

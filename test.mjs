@@ -79,6 +79,7 @@ assert.equal(exhausted.status,503);
 assert.equal(await decrypt(new Uint8Array(objects.get('AAA').storage.data.get('note').bytes),password),plaintext);
 
 const source = (await readFile(new URL('./public/app.js', import.meta.url),'utf8')).replace(/^import .*;$/gm, '');
+const qrSource = await readFile(new URL('./public/vendor/qrcode.js', import.meta.url), 'utf8');
 function browser(pathname, saved = new Map(), storageFails = false) {
  const nodes = new Map(), requests = [];
  const node = id => {
@@ -87,24 +88,73 @@ function browser(pathname, saved = new Map(), storageFails = false) {
  };
  const storage = {getItem:k=>saved.get(k),setItem(k,v){if(storageFails)throw Error();saved.set(k,v)},removeItem(k){if(storageFails)throw Error();saved.delete(k)}};
  const context = vm.createContext({document:{getElementById:node,querySelectorAll:()=>[...nodes.values()],addEventListener(){}},window:{addEventListener(){}},location:{pathname,origin},localStorage:storage,crypto:webcrypto,isSecureContext:true,TextEncoder,TextDecoder,Uint8Array,URL,Date,setInterval(){},encrypt,decrypt,QrScanner:{},fetch:async(path,init)=>{ requests.push({path,init}); return req(path, init?.method === 'POST' ? {...init,headers:{...init.headers,Origin:origin}} : init); }});
+ vm.runInContext(qrSource,context); context.window.qrcode = context.qrcode;
  vm.runInContext(source,context);
  return {node,saved,requests,context};
 }
 const sender = browser('/');
 assert.equal(sender.node('remember').checked,false);
 sender.node('password').value=password;sender.node('message').value=plaintext;
+sender.node('password-form').events.submit({preventDefault(){}});
 await sender.node('submit').events.click();assert.equal(sender.node('sent').hidden,false);assert.equal(sender.saved.size,0);
 assert.equal(sender.requests.length,1);assert.equal(await decrypt(sender.requests[0].init.body,password),plaintext);
 assert.match(sender.node('share-url').value,/https:\/\/cryptnote.pages.dev\/[A-Za-z0-9]{3}$/);
 sender.node('remember').checked=true;sender.node('remember').events.change();assert.equal(sender.saved.get('cryptnote.password'),password);
 sender.node('remember').checked=false;sender.node('remember').events.change();assert.equal(sender.saved.size,0);
 const receiver = browser('/receive');receiver.node('note-code').value=sender.node('share-url').value;receiver.node('password').value='wrong';
+receiver.node('password-form').events.submit({preventDefault(){}});
 await receiver.node('submit').events.click();assert.equal(receiver.node('opened').hidden,true);
-receiver.node('password').value=password;await receiver.node('submit').events.click();
+assert.equal(receiver.node('password-setup').hidden,false); assert.equal(receiver.node('submit').hidden,true);
+receiver.node('password').value=password;receiver.node('password-form').events.submit({preventDefault(){}});await receiver.node('submit').events.click();
 assert.equal(receiver.requests.length,1);assert.equal(receiver.node('plaintext').textContent,plaintext);
 receiver.node('remember').checked=true;receiver.node('remember').events.change();receiver.node('clear-password').events.click();
 assert.equal(receiver.saved.size,0);assert.equal(receiver.node('password').value,'');assert.equal(receiver.node('plaintext').textContent,'');
 vm.runInContext("importQR('cryptnote:v1:' + 'ab'.repeat(32))",sender.context);assert.equal(sender.node('password').value,'ab'.repeat(32));
 assert.throws(()=>vm.runInContext("importQR('https://evil.example/password')",sender.context));
-const denied = browser('/',new Map(),true);denied.node('password').value=password;denied.node('message').value=plaintext;await denied.node('submit').events.click();assert.equal(denied.node('sent').hidden,false);
+const denied = browser('/',new Map(),true);denied.node('password').value=password;denied.node('message').value=plaintext;denied.node('password-form').events.submit({preventDefault(){}});await denied.node('submit').events.click();assert.equal(denied.node('sent').hidden,false);
+
+// Setup is explicit: note actions never appear until a password is accepted.
+for (const route of ['/', '/receive']) {
+ const flow = browser(route);
+ assert.equal(flow.node('submit').hidden, true);
+ assert.equal(flow.node('password-entry').hidden, false);
+ assert.equal(flow.node('qr-tools').hidden, true);
+ flow.node('qr-mode').events.click();
+ assert.equal(flow.node('password-entry').hidden, true);
+ assert.equal(flow.node('qr-tools').hidden, false);
+ flow.node('generate').events.click();
+ assert.match(flow.node('password').value, /^[a-f0-9]{64}$/);
+ assert.equal(flow.node('qr-panel').hidden, false);
+ assert.equal(flow.node('submit').hidden, true);
+ const generated = flow.node('password').value;
+ flow.node('use-qr').events.click();
+ assert.equal(flow.node('password-setup').hidden, true);
+ assert.equal(flow.node('password-summary').hidden, false);
+ assert.equal(flow.node('submit').hidden, false);
+ flow.node('edit-password').events.click();
+ assert.equal(flow.node('submit').hidden, true);
+ flow.node('generate').events.click();
+ assert.equal(flow.node('password').value, generated); // Sharing again preserves the agreed password.
+ flow.node('clear-password').events.click();
+ assert.equal(flow.node('password').value, '');
+ assert.equal(flow.node('submit').hidden, true);
+ assert.equal(flow.node('password-entry').hidden, false);
+}
+const restored = browser('/receive',new Map([['cryptnote.password',password]]));
+assert.equal(restored.node('password-setup').hidden,true);
+assert.equal(restored.node('submit').hidden,false);
+const invalid = browser('/');invalid.node('password').value='short';invalid.node('password-form').events.submit({preventDefault(){}});
+assert.equal(invalid.node('submit').hidden,true);
+
+
+const shareExisting = browser('/');shareExisting.node('password').value = password;
+shareExisting.node('qr-mode').events.click();shareExisting.node('generate').events.click();
+assert.equal(shareExisting.node('password').value,password);
+assert.equal(shareExisting.node('qr-panel').hidden,false);
+const unicodePassword = 'Shared private 密碼 🔐 for testing';
+vm.runInContext('importQR(' + JSON.stringify('cryptnote:v2:' + encodeURIComponent(unicodePassword)) + ')',shareExisting.context);
+assert.equal(shareExisting.node('password').value,unicodePassword);
+assert.equal(shareExisting.node('password-setup').hidden,true);
+assert.throws(()=>vm.runInContext("importQR('cryptnote:v2:%zz')",shareExisting.context));
+
 console.log('PASS: crypto, tampering, payload limits, concurrent allocation, expiry, routes, encrypted transmission, offline retries, QR import, and optional password persistence.');
