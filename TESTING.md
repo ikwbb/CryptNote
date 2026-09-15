@@ -21,3 +21,31 @@ Before a release, check the complete flow in real browsers.
 The automated tests use serialized in-memory storage and a small DOM stub. They do not emulate Cloudflare quotas, backups, physical cameras or the complete Durable Object alarm environment.
 
 Production changes should therefore finish with deployment smoke checks.
+
+## Local development
+
+Run the test suite:
+
+```sh
+node test.mjs
+```
+
+For local Cloudflare runtime development, open two terminals from the repository root.
+
+### Terminal 1 — storage Worker
+
+```sh
+npx wrangler@4 dev --config worker/wrangler.jsonc
+```
+
+### Terminal 2 — Pages application
+
+```sh
+npx wrangler@4 pages dev public
+```
+
+Wrangler connects the Pages application to the local storage Worker.
+
+Open the localhost URL which Wrangler provides.
+
+Production deployment requires HTTPS.

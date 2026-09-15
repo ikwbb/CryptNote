@@ -229,34 +229,6 @@ Use Wrangler deployment rather than dashboard drag-and-drop. GitHub can host the
 
 Use a separate storage Worker if you need isolated preview storage.
 
-## Local development
-
-Run the test suite:
-
-```sh
-node test.mjs
-```
-
-For local Cloudflare runtime development, open two terminals from the repository root.
-
-### Terminal 1 — storage Worker
-
-```sh
-npx wrangler@4 dev --config worker/wrangler.jsonc
-```
-
-### Terminal 2 — Pages application
-
-```sh
-npx wrangler@4 pages dev public
-```
-
-Wrangler connects the Pages application to the local storage Worker.
-
-Open the localhost URL which Wrangler provides.
-
-Production deployment requires HTTPS.
-
 ## Security
 
 CryptNote is designed so that note contents are encrypted before they leave the sender's browser.
