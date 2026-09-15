@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Private notes, encrypted in your browser. Share a short link. Expires in 24 hours.">
+<title>CryptNote — A little more private.</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/vendor/qrcode.js" defer></script><script type="module" src="/app.js"></script>
+</head>
+<body>
+<header><a class="brand" href="/" aria-label="CryptNote home"><span class="mark" aria-hidden="true">✳</span> CryptNote</a><span class="badge">END-TO-END ENCRYPTED</span></header>
+<main>
+<div class="intro"><p class="eyebrow">FOR YOUR EYES ONLY</p><h1>A little more private.</h1><p>Share a thought. Keep it between you.<br>Encrypted on your device. Gone from the app in 24 hours.</p></div>
+<div class="workspace">
+<nav aria-label="Note action"><a id="send-tab" href="/">Send a note <span>↗</span></a><a id="receive-tab" href="/receive">Receive a note <span>↙</span></a></nav>
+<section class="card">
+<div id="send-panel" hidden><p class="eyebrow">01 / WRITE SOMETHING</p><h2>Just between you two.</h2><p class="muted">Use the password your recipient shared with you.</p><label for="message">Your message</label><textarea id="message" rows="7" placeholder="The thing you wanted to say…" maxlength="65536"></textarea><div class="field-meta"><span>Text only. No attachments.</span><span id="byte-count">0 / 65,536 bytes</span></div></div>
+<div id="receive-panel" hidden><p class="eyebrow">01 / GET CONNECTED</p><h2>Your private inbox.</h2><p class="muted">First, share a password with your sender. Then open their note.</p><label for="note-code">Note code or link</label><input id="note-code" type="text" placeholder="e.g. 3Ds" autocomplete="off" spellcheck="false"><p class="hint">Already have a link? Paste it here, or open it directly.</p></div>
+<div class="password-section"><div class="label-row"><label for="password">Shared password</label><button id="show-password" class="text-button" type="button" aria-pressed="false">Show</button></div><input id="password" type="password" autocomplete="off" spellcheck="false" placeholder="Enter your shared password" maxlength="1024" aria-describedby="password-hint"><p class="hint" id="password-hint">Use a long, unique password. It never leaves your device.</p>
+<div class="tools"><button id="generate" class="secondary" type="button" hidden>Generate password + QR</button><button id="scan" class="secondary" type="button" hidden>Scan password QR</button><label class="file-button" id="upload-label" hidden>Upload QR image<input id="qr-file" type="file" accept="image/*"></label></div>
+<div id="qr-panel" class="qr-panel" hidden><canvas id="qr" aria-label="QR code containing the shared password" role="img"></canvas><div><strong>Let your sender scan this.</strong><p>This QR contains your password. Show it privately, or share it over a trusted channel.</p><button id="hide-qr" class="text-button" type="button">Hide QR</button></div></div>
+<div class="save-row"><label class="check"><input id="remember" type="checkbox"> Remember password on this device</label><button id="clear-password" class="text-button" type="button">Clear password</button></div><p class="hint">Off by default. Saved passwords stay in this browser until you clear them.</p></div>
+<button id="submit" class="primary" type="button">Encrypt & create link <span>↗</span></button>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="sent" class="result" hidden><p class="eyebrow">READY TO SHARE</p><h3>Your note has a home. For now.</h3><label for="share-url">Send this link to your recipient</label><div class="copy-row"><input id="share-url" readonly><button id="copy-link" class="secondary" type="button">Copy link</button></div><p id="sent-expiry" class="hint"></p><p class="hint">The password is separate from this link.</p></section>
+<section id="opened" class="result" hidden><p class="eyebrow">JUST FOR YOU</p><h3>Your decrypted note</h3><pre id="plaintext"></pre><button id="clear-note" class="secondary" type="button">Clear note from screen</button><p id="received-expiry" class="hint"></p></section>
+</section></div>
+<div class="assurances"><span><b>01</b> Encrypt in your browser</span><span><b>02</b> Share a tiny link</span><span><b>03</b> Expires after 24 hours</span></div>
+</main><footer><span>Small notes. Fewer traces.</span><span>No accounts · No analytics</span></footer>
+<dialog id="scan-dialog"><div class="label-row"><h2>Scan the password QR</h2><button id="stop-scan" class="secondary" type="button">Close</button></div><video id="video" muted playsinline></video><p class="hint">Point your camera at the recipient’s QR code.</p></dialog>
+<noscript>CryptNote needs JavaScript to encrypt and decrypt messages on your device.</noscript>
+</body></html>

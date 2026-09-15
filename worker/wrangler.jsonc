@@ -1,0 +1,23 @@
+{
+  "name": "cryptnote-messages",
+  "main": "messages.js",
+  "compatibility_date": "2026-09-15",
+  "workers_dev": false,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MESSAGES",
+        "class_name": "Message"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "Message"
+      ]
+    }
+  ]
+}

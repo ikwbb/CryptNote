@@ -1,0 +1,13 @@
+{
+  "name": "cryptnote",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test.mjs",
+    "dev:storage": "npx wrangler@4 dev --config worker/wrangler.jsonc",
+    "dev": "npx wrangler@4 pages dev public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
